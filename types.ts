@@ -1,4 +1,7 @@
 
+// Import React to resolve the "Cannot find namespace 'React'" error on React.ReactNode
+import React from 'react';
+
 export interface MenuItem {
   id: string;
   label: string;
@@ -18,6 +21,8 @@ export interface ProductConfig {
   code: string;
   name: string;
   status: 'Draft' | 'Published' | 'Inactive';
+  creditType: '循环' | '非循环';
+  validity: string;
   lastModified: string;
 }
 

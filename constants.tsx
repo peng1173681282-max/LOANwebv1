@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { 
   LayoutDashboard, 
@@ -38,11 +39,6 @@ import {
 import { MenuItem } from './types';
 
 export const MENU_DATA: MenuItem[] = [
-  {
-    id: 'dashboard',
-    label: '控制台',
-    icon: <LayoutDashboard size={18} />
-  },
   {
     id: 'product-management',
     label: '产品管理',

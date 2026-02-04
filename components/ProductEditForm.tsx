@@ -24,9 +24,50 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
 
   // States for Fee Module
   const [collectPenalty, setCollectPenalty] = useState('是');
+  const [penaltyAccountingPosition, setPenaltyAccountingPosition] = useState('逾期期次');
   const [allowEarlySettlement, setAllowEarlySettlement] = useState('是');
   const [feeRule, setFeeRule] = useState('按比例收取');
   const [interestRule, setInterestRule] = useState('按日收取');
+
+  // States for Repayment Module
+  const [repaymentOptions, setRepaymentOptions] = useState({
+    offline: '否',
+    quick: '是',
+    single: '是',
+    batch: '是',
+    agent: '否',
+    overBatch: '否',
+    overDeduct: '是',
+    overOthers: '否'
+  });
+
+  const handleRepaymentChange = (key: keyof typeof repaymentOptions, value: string) => {
+    setRepaymentOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // States for Post-loan Module
+  const [postLoanOptions, setPostLoanOptions] = useState({
+    restructuring: '否',
+    extension: '否',
+    refinance: '否',
+    billInstallment: '否',
+    consInstallment: '否'
+  });
+
+  const handlePostLoanChange = (key: keyof typeof postLoanOptions, value: string) => {
+    setPostLoanOptions(prev => ({ ...prev, [key]: value }));
+  };
+
+  // States for Closing Module
+  const [closingOptions, setClosingOptions] = useState({
+    autoCloseOnFailure: '否',
+    autoCloseOnSettlement: '否',
+    autoCloseOnExpiry: '否'
+  });
+
+  const handleClosingChange = (key: keyof typeof closingOptions, value: string) => {
+    setClosingOptions(prev => ({ ...prev, [key]: value }));
+  };
 
   const modules: { id: ProductModuleId; label: string; icon: React.ReactNode }[] = [
     { id: 'basic', label: '基础信息配置', icon: <ICONS.FileText size={16} /> },
@@ -59,16 +100,6 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
                 <div className="md:col-span-2">
                   <FormTextArea label="产品描述" placeholder="请输入产品业务背景与详细定义..." />
                 </div>
-              </div>
-            </section>
-
-            <section>
-              <h3 className="text-sm font-bold text-slate-800 mb-4 bg-slate-50 p-2 rounded">场景映射配置 (Scenario Mapping)</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <FormSelect label="现金分期场景" options={['LOAN_CASH_01', 'LOAN_CASH_02']} />
-                <FormSelect label="消费分期场景" options={['CONS_INST_01']} />
-                <FormSelect label="随借随还(取现)" options={['REVOLVING_CASH']} />
-                <FormSelect label="随借随还(消费)" options={['REVOLVING_CONS']} />
               </div>
             </section>
           </div>
@@ -365,16 +396,22 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
                   options={['逾期本金', '剩余未还本金']} 
                   disabled={collectPenalty === '否'}
                 />
-                <div className="md:col-span-1">
-                   <FormField 
-                    label="罚息上浮倍数" 
-                    required 
-                    placeholder="如：1.5" 
-                    type="number" 
-                    defaultValue="1.5"
-                    disabled={collectPenalty === '否'}
-                   />
-                </div>
+                <FormField 
+                  label="罚息上浮倍数" 
+                  required 
+                  placeholder="如：1.5" 
+                  type="number" 
+                  defaultValue="1.5"
+                  disabled={collectPenalty === '否'}
+                />
+                <FormSelect 
+                  label="罚息记账位置" 
+                  required 
+                  value={penaltyAccountingPosition}
+                  onChange={(e) => setPenaltyAccountingPosition(e.target.value)}
+                  options={['逾期期次', '最新期次']} 
+                  disabled={collectPenalty === '否'}
+                />
               </div>
             </section>
 
@@ -514,33 +551,124 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
         );
       case 'repayment':
         return (
-            <div className="space-y-8 animate-in fade-in duration-300">
-               <section>
-                <div className="bg-blue-50/50 p-3 rounded-t-xl border-x border-t border-blue-100 flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-blue-900">还款能力模块集成</h4>
-                    <span className="text-[10px] bg-blue-600 text-white px-1.5 py-0.5 rounded font-bold">CORE</span>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-200 border border-slate-200 rounded-b-xl overflow-hidden">
-                    <FormSwitchInGrid label="支持线下还款 (柜面/汇款)" defaultEnabled={true} />
-                    <FormSwitchInGrid label="支持快捷还款 (第三方支付)" defaultEnabled={true} />
-                    <FormSwitchInGrid label="支持单笔协议划扣" defaultEnabled={true} />
-                    <FormSwitchInGrid label="支持批量自动扣款" defaultEnabled={true} />
-                    <FormSwitchInGrid label="支持坐席豁免/减免还款" defaultEnabled={false} />
-                </div>
-               </section>
+          <div className="space-y-10 animate-in fade-in duration-300">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-blue-700 rounded-full"></div>
+              还款规则配置
+            </h3>
 
-               <section>
-                <div className="bg-slate-800 p-3 rounded-t-xl flex items-center justify-between">
-                    <h4 className="text-sm font-bold text-white">溢缴款处理规则 (Overpayment)</h4>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-slate-200 border border-slate-200 rounded-b-xl overflow-hidden">
-                    <FormSwitchInGrid label="支持批量退还溢缴款" defaultEnabled={false} />
-                    <FormSwitchInGrid label="自动抵扣同产品其他欠款" defaultEnabled={true} />
-                    <FormSwitchInGrid label="抵扣其他关联产品借据" defaultEnabled={false} />
-                </div>
-               </section>
+            {/* Repayment Module Block */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                <h4 className="text-sm font-bold text-slate-800">还款模块</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-1">
+                <FormSelect label="是否支持线下还款" required value={repaymentOptions.offline} onChange={(e) => handleRepaymentChange('offline', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持快捷还款" required value={repaymentOptions.quick} onChange={(e) => handleRepaymentChange('quick', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持单笔协议划扣" required value={repaymentOptions.single} onChange={(e) => handleRepaymentChange('single', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持批量自动扣款" required value={repaymentOptions.batch} onChange={(e) => handleRepaymentChange('batch', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持坐席豁免" required value={repaymentOptions.agent} onChange={(e) => handleRepaymentChange('agent', e.target.value)} options={['是', '否']} />
+              </div>
+            </section>
+
+            {/* Overpayment Module Block */}
+            <section className="space-y-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-indigo-500 rounded-full"></div>
+                <h4 className="text-sm font-bold text-slate-800">溢缴款模块</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-1">
+                <FormSelect label="溢缴款是否支持批量退还" required value={repaymentOptions.overBatch} onChange={(e) => handleRepaymentChange('overBatch', e.target.value)} options={['是', '否']} />
+                <FormSelect label="溢缴款是否自动抵扣同产品其他欠款" required value={repaymentOptions.overDeduct} onChange={(e) => handleRepaymentChange('overDeduct', e.target.value)} options={['是', '否']} />
+                <FormSelect label="溢缴款是否抵扣其他关联产品借据" required value={repaymentOptions.overOthers} onChange={(e) => handleRepaymentChange('overOthers', e.target.value)} options={['是', '否']} />
+              </div>
+            </section>
+
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-4 mt-8">
+              <h4 className="text-xs font-bold text-slate-700 mb-2">业务说明：</h4>
+              <p className="text-[13px] text-slate-600 leading-relaxed">
+                还款规则配置涉及各渠道划扣权限与溢缴款自动处理逻辑。还款模块决定了客户的资金入口多样性，溢缴款模块则定义了多收资金的自动化对账与退回规则。
+              </p>
             </div>
-        )
+          </div>
+        );
+      case 'postloan':
+        return (
+          <div className="space-y-10 animate-in fade-in duration-300">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-blue-700 rounded-full"></div>
+              贷后管理配置
+            </h3>
+
+            <section className="space-y-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full"></div>
+                <h4 className="text-sm font-bold text-slate-800">业务处理配置</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-1">
+                <FormSelect label="是否支持债务重组" required value={postLoanOptions.restructuring} onChange={(e) => handlePostLoanChange('restructuring', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持延期" required value={postLoanOptions.extension} onChange={(e) => handlePostLoanChange('extension', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持借新还旧" required value={postLoanOptions.refinance} onChange={(e) => handlePostLoanChange('refinance', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持账单转分期" required value={postLoanOptions.billInstallment} onChange={(e) => handlePostLoanChange('billInstallment', e.target.value)} options={['是', '否']} />
+                <FormSelect label="是否支持消费转分期" required value={postLoanOptions.consInstallment} onChange={(e) => handlePostLoanChange('consInstallment', e.target.value)} options={['是', '否']} />
+              </div>
+            </section>
+
+            <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-4 mt-8">
+              <h4 className="text-xs font-bold text-slate-700 mb-2">业务说明：</h4>
+              <p className="text-[13px] text-slate-600 leading-relaxed">
+                贷后管理配置定义了贷款发放后的特殊业务处理逻辑。债务重组、延期及借新还旧是缓解借款人还款压力的重要手段。转分期功能则提供了账单灵活性的延展。
+              </p>
+            </div>
+          </div>
+        );
+      case 'closing':
+        return (
+          <div className="space-y-10 animate-in fade-in duration-300">
+            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <div className="w-1 h-6 bg-blue-700 rounded-full"></div>
+              关户规则配置
+            </h3>
+
+            <section className="space-y-6">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 bg-red-500 rounded-full"></div>
+                <h4 className="text-sm font-bold text-slate-800">系统自动关户策略</h4>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6 px-1">
+                <FormSelect 
+                  label="放款失败自动关户" 
+                  required 
+                  value={closingOptions.autoCloseOnFailure} 
+                  onChange={(e) => handleClosingChange('autoCloseOnFailure', e.target.value)} 
+                  options={['是', '否']} 
+                />
+                <FormSelect 
+                  label="结清时自动关户" 
+                  required 
+                  value={closingOptions.autoCloseOnSettlement} 
+                  onChange={(e) => handleClosingChange('autoCloseOnSettlement', e.target.value)} 
+                  options={['是', '否']} 
+                />
+                <FormSelect 
+                  label="额度有效期到期且无余额自动关户" 
+                  required 
+                  value={closingOptions.autoCloseOnExpiry} 
+                  onChange={(e) => handleClosingChange('autoCloseOnExpiry', e.target.value)} 
+                  options={['是', '否']} 
+                />
+              </div>
+            </section>
+
+            <div className="bg-[#fff1f2] border border-[#fecdd3] rounded-[12px] p-4 mt-8">
+              <h4 className="text-xs font-bold text-pink-900 mb-2">业务说明：</h4>
+              <p className="text-[13px] text-pink-800 leading-relaxed">
+                关户规则配置决定了借款人账户生命周期的终点逻辑。自动关户可以降低系统非活跃账户维护压力，并确保在敏感节点（如放款失败或授信过期）及时清理失效账户状态。
+              </p>
+            </div>
+          </div>
+        );
       default:
         return (
           <div className="flex flex-col items-center justify-center py-20 text-slate-300">

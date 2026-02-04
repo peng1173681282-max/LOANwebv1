@@ -9,9 +9,9 @@ const ProductBasicPage: React.FC = () => {
   const [editingProduct, setEditingProduct] = useState<ProductConfig | null>(null);
 
   const initialProducts: ProductConfig[] = [
-    { id: '1', code: '001001', name: '快贷-工薪精英贷', status: 'Published', lastModified: '2024-05-20 14:20' },
-    { id: '2', code: '002005', name: '助力-小微经营抵押贷Pro', status: 'Published', lastModified: '2024-05-18 09:15' },
-    { id: '3', code: '003008', name: '极速秒放-S', status: 'Draft', lastModified: '2024-05-19 18:40' },
+    { id: '1', code: '001001', name: '快贷-工薪精英贷', status: 'Published', creditType: '循环', validity: '12个月', lastModified: '2024-05-20 14:20' },
+    { id: '2', code: '002005', name: '助力-小微经营抵押贷Pro', status: 'Published', creditType: '非循环', validity: '24个月', lastModified: '2024-05-18 09:15' },
+    { id: '3', code: '003008', name: '极速秒放-S', status: 'Draft', creditType: '循环', validity: '6个月', lastModified: '2024-05-19 18:40' },
   ];
 
   const handleEdit = (product: ProductConfig) => {
@@ -22,6 +22,16 @@ const ProductBasicPage: React.FC = () => {
   const handleAddNew = () => {
     setEditingProduct(null);
     setViewMode('edit');
+  };
+
+  const handleCopy = (product: ProductConfig) => {
+    console.log('Copying product:', product.name);
+    // Implementation for copy would go here
+  };
+
+  const handleDelete = (product: ProductConfig) => {
+    console.log('Deleting product:', product.name);
+    // Implementation for delete would go here
   };
 
   if (viewMode === 'edit') {
@@ -53,39 +63,61 @@ const ProductBasicPage: React.FC = () => {
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="bg-slate-50/80 text-[11px] text-slate-400 font-bold uppercase tracking-widest border-b border-slate-100">
-              <th className="px-8 py-4 w-40">产品编码</th>
-              <th className="px-8 py-4">产品名称</th>
-              <th className="px-8 py-4 w-32">当前状态</th>
-              <th className="px-8 py-4 w-48">最后更新</th>
-              <th className="px-8 py-4 w-32 text-right">操作</th>
+              <th className="px-6 py-4 w-32">产品编码</th>
+              <th className="px-4 py-4 min-w-[200px]">产品名称</th>
+              <th className="px-6 py-4 w-28">当前状态</th>
+              <th className="px-6 py-4 w-32 text-center">额度类型</th>
+              <th className="px-6 py-4 w-32 text-center">有效期</th>
+              <th className="px-6 py-4 w-40 text-right">操作</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-slate-100">
             {initialProducts.map((p) => (
               <tr key={p.id} className="group hover:bg-slate-50/50 transition-colors cursor-default">
-                <td className="px-8 py-5 text-sm font-mono font-bold text-slate-600 tracking-wider">
+                <td className="px-6 py-5 text-sm font-mono font-bold text-slate-600 tracking-wider">
                   {p.code}
                 </td>
-                <td className="px-8 py-5">
-                  <span className="text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors">{p.name}</span>
+                <td className="px-4 py-5">
+                  <span className="text-sm font-bold text-slate-900 group-hover:text-blue-700 transition-colors whitespace-nowrap overflow-hidden text-ellipsis block">
+                    {p.name}
+                  </span>
                 </td>
-                <td className="px-8 py-5">
+                <td className="px-6 py-5">
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded ${
                     p.status === 'Published' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'
                   }`}>
                     {p.status === 'Published' ? '已发布' : '草稿'}
                   </span>
                 </td>
-                <td className="px-8 py-5 text-xs text-slate-400 font-medium">
-                  {p.lastModified}
+                <td className="px-6 py-5 text-center">
+                  <span className={`text-xs font-medium ${p.creditType === '循环' ? 'text-blue-600' : 'text-slate-600'}`}>
+                    {p.creditType === '循环' ? '循环额度' : '非循环额度'}
+                  </span>
                 </td>
-                <td className="px-8 py-5 text-right">
-                  <button 
-                    onClick={() => handleEdit(p)}
-                    className="text-blue-600 hover:text-blue-800 font-bold text-sm transition-colors"
-                  >
-                    编辑
-                  </button>
+                <td className="px-6 py-5 text-xs text-slate-500 font-medium text-center">
+                  {p.validity}
+                </td>
+                <td className="px-6 py-5 text-right">
+                  <div className="flex items-center justify-end gap-3">
+                    <button 
+                      onClick={() => handleEdit(p)}
+                      className="text-blue-600 hover:text-blue-800 font-bold text-sm transition-colors"
+                    >
+                      编辑
+                    </button>
+                    <button 
+                      onClick={() => handleCopy(p)}
+                      className="text-slate-400 hover:text-blue-600 font-bold text-sm transition-colors flex items-center gap-1"
+                    >
+                      复制
+                    </button>
+                    <button 
+                      onClick={() => handleDelete(p)}
+                      className="text-red-500 hover:text-red-700 font-bold text-sm transition-colors"
+                    >
+                      删除
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}
