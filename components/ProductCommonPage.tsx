@@ -134,6 +134,86 @@ const ProductCommonPage: React.FC = () => {
   const [isDeductionModalOpen, setIsDeductionModalOpen] = useState(false);
   const [editingDeduction, setEditingDeduction] = useState<DeductionRule | null>(null);
 
+  // Helper to generate lock codes based on alphabet
+  const generateAlphabetLockCodes = () => {
+    const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const result: LockCodeRecord[] = [];
+    
+    // First 26: A-Z
+    for (let i = 0; i < 26; i++) {
+      result.push({
+        code: alphabet[i],
+        description: `锁定码 ${alphabet[i]} - 系统扩展配置`,
+        applicant: 'admin',
+        additionTime: '2024-05-22',
+        status: 'ACTIVATE-启用',
+        categories: ['用信控制'],
+        reason: '账龄锁定码-已逾期',
+        department: '资管部',
+        addScene: '无',
+        addMethod: '系统自动',
+        removeScene: '无',
+        removeMethod: '系统自动',
+        requirementPos: '无',
+        allowUnlock: 'Y-支持',
+        unlockMethod: '还款后自动解锁',
+        cashWithdrawalDecision: 'D-拒绝',
+        cashInstallmentDecision: 'D-拒绝',
+        dailyInterestConsDecision: 'D-拒绝',
+        interestFreeConsDecision: 'D-拒绝',
+        consToInstallmentDecision: 'D-拒绝',
+        billToInstallmentDecision: 'D-拒绝',
+        posInstallmentDecision: 'D-拒绝',
+        memberConsDecision: 'D-拒绝',
+        allowEarlySettlement: false,
+        minPaymentCalcMethod: 'N-正常还款',
+        accrueDailyInterest: true,
+        waiveInterest: false,
+        waiveExcessCashFee: false,
+        waiveServiceFee: false,
+        waiveOtherFees: false
+      });
+    }
+    
+    // Next 9: AA-AI to reach 35 total
+    for (let i = 0; i < 9; i++) {
+      const code = 'A' + alphabet[i];
+      result.push({
+        code: code,
+        description: `锁定码 ${code} - 系统扩展配置`,
+        applicant: 'admin',
+        additionTime: '2024-05-22',
+        status: 'ACTIVATE-启用',
+        categories: ['用信控制'],
+        reason: '账龄锁定码-已逾期',
+        department: '资管部',
+        addScene: '无',
+        addMethod: '系统自动',
+        removeScene: '无',
+        removeMethod: '系统自动',
+        requirementPos: '无',
+        allowUnlock: 'Y-支持',
+        unlockMethod: '还款后自动解锁',
+        cashWithdrawalDecision: 'D-拒绝',
+        cashInstallmentDecision: 'D-拒绝',
+        dailyInterestConsDecision: 'D-拒绝',
+        interestFreeConsDecision: 'D-拒绝',
+        consToInstallmentDecision: 'D-拒绝',
+        billToInstallmentDecision: 'D-拒绝',
+        posInstallmentDecision: 'D-拒绝',
+        memberConsDecision: 'D-拒绝',
+        allowEarlySettlement: false,
+        minPaymentCalcMethod: 'N-正常还款',
+        accrueDailyInterest: true,
+        waiveInterest: false,
+        waiveExcessCashFee: false,
+        waiveServiceFee: false,
+        waiveOtherFees: false
+      });
+    }
+    return result;
+  };
+
   // States for Lock Code Management
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [editingRecord, setEditingRecord] = useState<LockCodeRecord | null>(null);
@@ -169,7 +249,8 @@ const ProductCommonPage: React.FC = () => {
       waiveExcessCashFee: false,
       waiveServiceFee: false,
       waiveOtherFees: false
-    }
+    },
+    ...generateAlphabetLockCodes()
   ]);
 
   // States for System Admission Management
@@ -280,14 +361,10 @@ const ProductCommonPage: React.FC = () => {
     setEditingDeduction({ ...editingDeduction, stageRules: newStageRules });
   };
 
-  // Other Handlers
-  const handleLockCodeDoubleClick = (record: LockCodeRecord) => {
-    setEditingRecord({ ...record });
-    setIsEditModalOpen(true);
-  };
-
+  // Handlers for System Admission
   const handleAdmissionDoubleClick = (record: SystemAdmissionRecord) => {
     setActiveSystem(record);
+    // Simulate ~30 interfaces for maintenance
     const mockInterfaces: InterfaceRecord[] = Array.from({ length: 30 }, (_, i) => ({
       id: Math.random().toString(36).substr(2, 9),
       name: `接口服务_${(i + 1).toString().padStart(3, '0')}`,
@@ -297,6 +374,39 @@ const ProductCommonPage: React.FC = () => {
     }));
     setActiveInterfaces(mockInterfaces);
     setIsAdmissionModalOpen(true);
+  };
+
+  const handleAddNewInterface = () => {
+    if (!activeSystem) return;
+    const newId = `new-${Math.random().toString(36).substr(2, 9)}`;
+    const newInterface: InterfaceRecord = {
+      id: newId,
+      name: '新接入服务接口',
+      path: `/api/v2/${activeSystem.id.toLowerCase()}/custom_endpoint`,
+      method: 'POST',
+      status: 'Unauthorized'
+    };
+    setActiveInterfaces(prev => [newInterface, ...prev]);
+  };
+
+  const handleUpdateInterfaceField = (id: string, field: keyof InterfaceRecord, value: string) => {
+    setActiveInterfaces(prev => prev.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const handleDeleteInterface = (id: string) => {
+    setActiveInterfaces(prev => prev.filter(item => item.id !== id));
+  };
+
+  const toggleInterfaceStatus = (id: string) => {
+    setActiveInterfaces(prev => prev.map(item => 
+      item.id === id ? { ...item, status: item.status === 'Authorized' ? 'Unauthorized' : 'Authorized' } : item
+    ));
+  };
+
+  // Other Handlers
+  const handleLockCodeDoubleClick = (record: LockCodeRecord) => {
+    setEditingRecord({ ...record });
+    setIsEditModalOpen(true);
   };
 
   const handleUpdateLockCode = () => {
@@ -535,7 +645,7 @@ const ProductCommonPage: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {lockCodeData.map((row, i) => (
-                <tr key={i} className="group hover:bg-blue-50/20 transition-colors cursor-pointer select-none" onDoubleClick={() => handleLockCodeDoubleClick(row)}>
+                <tr key={`${row.code}-${i}`} className="group hover:bg-blue-50/20 transition-colors cursor-pointer select-none" onDoubleClick={() => handleLockCodeDoubleClick(row)}>
                   <td className="px-4 py-3 text-center" onClick={(e) => e.stopPropagation()}>
                     <input type="checkbox" className="rounded border-slate-300 text-blue-600 focus:ring-blue-500" />
                   </td>
@@ -554,6 +664,7 @@ const ProductCommonPage: React.FC = () => {
 
   const renderAdmissionManagement = () => (
     <div className="space-y-4 animate-in fade-in duration-300 h-full flex flex-col">
+      {/* Search Area - Same style as Lock Code top half */}
       <div className="bg-slate-50/50 p-4 rounded-xl border border-slate-200 grid grid-cols-3 gap-4 items-end flex-shrink-0">
         <div className="space-y-1.5">
           <label className="text-[12px] font-bold text-slate-600">系统ID:</label>
@@ -579,6 +690,7 @@ const ProductCommonPage: React.FC = () => {
         </button>
       </div>
 
+      {/* Main Table Area */}
       <div className="bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm flex-1 flex flex-col">
         <div className="overflow-y-auto flex-1 custom-scrollbar">
           <table className="w-full text-left border-collapse">
@@ -683,6 +795,139 @@ const ProductCommonPage: React.FC = () => {
            activeTab === 'allocation' ? renderAllocationManagement() : renderDefaultContent()}
         </div>
       </div>
+
+      {/* Admission Interface Maintenance Modal - 系统接口准入维护界面 */}
+      {isAdmissionModalOpen && activeSystem && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] p-4">
+          <div className="bg-[#f0f2f5] rounded shadow-2xl w-full max-w-6xl overflow-hidden animate-in zoom-in-95 duration-200 flex flex-col max-h-[95vh] border border-slate-300">
+            <div className="px-6 py-2 bg-[#e4e7ed] border-b border-slate-300 flex items-center justify-between">
+               <div className="flex items-center gap-2">
+                 <ICONS.ShieldCheck size={16} className="text-blue-800" />
+                 <span className="text-[12px] font-bold text-slate-700">系统接口权限维护 - {activeSystem.name}</span>
+               </div>
+               <div className="flex items-center gap-2">
+                  <button 
+                    onClick={handleAddNewInterface}
+                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-1.5 rounded-lg text-[11px] font-bold flex items-center gap-1.5 shadow-md shadow-blue-200 transition-all active:scale-95"
+                  >
+                    <ICONS.Plus size={14} strokeWidth={3} /> 新增接口服务
+                  </button>
+                  <button onClick={() => setIsAdmissionModalOpen(false)} className="text-slate-500 hover:text-red-600 transition-colors ml-2">
+                      <ICONS.Plus className="rotate-45" size={18} />
+                  </button>
+               </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 bg-white flex flex-col min-h-0">
+               {/* Summary Bar */}
+               <div className="bg-slate-50 rounded p-3 mb-4 grid grid-cols-4 gap-4 border border-slate-200 flex-shrink-0">
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">系统标识</span>
+                    <span className="text-[13px] font-mono font-bold text-blue-700">{activeSystem.id}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">系统名称</span>
+                    <span className="text-[13px] font-bold text-slate-800">{activeSystem.name}</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">接口总数</span>
+                    <span className="text-[13px] font-bold text-slate-800">{activeInterfaces.length} 个</span>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">已授权数</span>
+                    <span className="text-[13px] font-bold text-emerald-600">{activeInterfaces.filter(i => i.status === 'Authorized').length} 个</span>
+                  </div>
+               </div>
+
+               {/* Interface Table Area */}
+               <div className="flex-1 border border-slate-200 rounded overflow-hidden flex flex-col shadow-inner bg-slate-50/20 min-h-0">
+                  <div className="overflow-y-auto flex-1 custom-scrollbar">
+                    <table className="w-full text-left border-collapse bg-white">
+                      <thead className="sticky top-0 z-20">
+                        <tr className="bg-slate-100 border-b border-slate-200 text-[11px] text-slate-500 font-bold uppercase tracking-wider shadow-sm">
+                          <th className="px-6 py-3 w-16">#</th>
+                          <th className="px-6 py-3 w-56">接口名称</th>
+                          <th className="px-6 py-3 font-mono">接口路径 (API Endpoint)</th>
+                          <th className="px-6 py-3 w-32">请求方式</th>
+                          <th className="px-6 py-3 w-32 text-center">授权状态</th>
+                          <th className="px-6 py-3 w-16 text-center">操作</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {activeInterfaces.map((item, index) => (
+                          <tr key={item.id} className={`group hover:bg-blue-50/30 transition-colors ${item.id.startsWith('new-') ? 'bg-blue-50/10' : ''}`}>
+                            <td className="px-6 py-3 text-xs text-slate-400 font-mono">
+                              {item.id.startsWith('new-') ? <span className="bg-blue-500 text-white text-[8px] px-1 rounded">NEW</span> : (index + 1)}
+                            </td>
+                            <td className="px-6 py-3">
+                              <input 
+                                className="w-full bg-transparent text-sm font-bold text-slate-700 outline-none focus:bg-white focus:ring-1 focus:ring-blue-100 rounded px-1"
+                                value={item.name}
+                                placeholder="输入接口名称..."
+                                onChange={e => handleUpdateInterfaceField(item.id, 'name', e.target.value)}
+                              />
+                            </td>
+                            <td className="px-6 py-3">
+                               <input 
+                                className="w-full bg-slate-50/50 group-hover:bg-white text-xs font-mono text-slate-500 outline-none focus:ring-1 focus:ring-blue-100 rounded px-1"
+                                value={item.path}
+                                placeholder="/api/endpoint"
+                                onChange={e => handleUpdateInterfaceField(item.id, 'path', e.target.value)}
+                              />
+                            </td>
+                            <td className="px-6 py-3">
+                              <select 
+                                className="bg-transparent font-mono text-[10px] font-bold text-blue-600 outline-none cursor-pointer"
+                                value={item.method}
+                                onChange={e => handleUpdateInterfaceField(item.id, 'method', e.target.value)}
+                              >
+                                <option>POST</option>
+                                <option>GET</option>
+                                <option>PUT</option>
+                                <option>DELETE</option>
+                              </select>
+                            </td>
+                            <td className="px-6 py-3 text-center">
+                              <button 
+                                onClick={() => toggleInterfaceStatus(item.id)}
+                                className={`px-4 py-1 rounded-full text-[11px] font-bold border transition-all ${
+                                  item.status === 'Authorized' 
+                                  ? 'bg-emerald-50 text-emerald-600 border-emerald-200 hover:bg-emerald-100' 
+                                  : 'bg-red-50 text-red-500 border-red-200 hover:bg-red-100'
+                                }`}
+                              >
+                                {item.status === 'Authorized' ? '已授权接入' : '未授权'}
+                              </button>
+                            </td>
+                            <td className="px-6 py-3 text-center">
+                              <button 
+                                onClick={() => handleDeleteInterface(item.id)}
+                                className="text-slate-300 hover:text-red-500 transition-colors"
+                                title="删除接口"
+                              >
+                                <ICONS.Plus className="rotate-45" size={16} />
+                              </button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+               </div>
+            </div>
+            <div className="px-6 py-2 bg-[#f0f2f5] border-t border-slate-300 flex items-center justify-end gap-3">
+              <button 
+                onClick={() => setIsAdmissionModalOpen(false)}
+                className="px-6 py-1 bg-white border border-slate-300 hover:bg-slate-100 text-[#333] text-[12px] font-bold rounded flex items-center gap-2 shadow-sm transition-all active:scale-95"
+              >
+                <ICONS.CheckCircle2 size={14} className="text-blue-600" /> 保存变更
+              </button>
+              <button onClick={() => setIsAdmissionModalOpen(false)} className="px-6 py-1 bg-white border border-slate-300 hover:bg-slate-100 text-[#333] text-[12px] font-bold rounded flex items-center gap-2 shadow-sm transition-all active:scale-95">
+                <ICONS.Plus className="rotate-45 text-red-600" size={14} /> 关闭
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Allocation Rule Maintenance Modal - 还款分配顺序维护界面 */}
       {isAllocationModalOpen && editingAllocation && (
