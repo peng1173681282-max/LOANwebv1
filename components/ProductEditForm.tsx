@@ -12,6 +12,10 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
   const [activeModule, setActiveModule] = useState<ProductModuleId>('basic');
   const [isAIModalOpen, setIsAIModalOpen] = useState(false);
 
+  // States for Basic Module
+  const [deductionRule, setDeductionRule] = useState('通用还款抵扣规则');
+  const [allocationRule, setAllocationRule] = useState('通用还款分配规则');
+
   // States for Limit Module
   const [limitType, setLimitType] = useState('循环');
   const [supportTempLimit, setSupportTempLimit] = useState('否');
@@ -97,6 +101,23 @@ const ProductEditForm: React.FC<ProductEditFormProps> = ({ onBack, productName =
                 <FormSelect label="结算币种" required options={['CNY - 人民币', 'USD - 美元', 'HKD - 港币']} />
                 <FormSelect label="账务规则" required options={['以合作为准', '以我司为准']} />
                 <FormSelect label="品牌类型" options={['渠道合作产品', '借呗品牌', '花呗品牌']} />
+                
+                {/* 新增抵扣规则与还款分配规则 */}
+                <FormSelect 
+                  label="抵扣规则" 
+                  required 
+                  options={['通用还款抵扣规则', '精英贷专项抵扣规则', '小微经营贷抵扣规则']} 
+                  value={deductionRule}
+                  onChange={(e) => setDeductionRule(e.target.value)}
+                />
+                <FormSelect 
+                  label="还款分配规则" 
+                  required 
+                  options={['通用还款分配规则', '精英贷特定分配规则', '小微经营贷保全规则']} 
+                  value={allocationRule}
+                  onChange={(e) => setAllocationRule(e.target.value)}
+                />
+
                 <div className="md:col-span-2">
                   <FormTextArea label="产品描述" placeholder="请输入产品业务背景与详细定义..." />
                 </div>
