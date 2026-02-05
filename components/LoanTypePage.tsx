@@ -46,6 +46,13 @@ const LoanTypePage: React.FC = () => {
     repaymentMethod: '等额本息'
   });
 
+  // 期数限额配置状态
+  const [periodRules, setPeriodRules] = useState([
+    { period: '3', minAmount: '1000', maxAmount: '50000' },
+    { period: '6', minAmount: '2000', maxAmount: '50000' },
+    { period: '12', minAmount: '5000', maxAmount: '100000' }
+  ]);
+
   // 搜索和选择状态
   const [searchTerm, setSearchTerm] = useState('');
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -97,8 +104,22 @@ const LoanTypePage: React.FC = () => {
   };
 
   const handleSaveRules = () => {
-    console.log('Saving rules for:', activeMapping, ruleFormData);
+    console.log('Saving rules for:', activeMapping, ruleFormData, periodRules);
     setIsRuleModalOpen(false);
+  };
+
+  const handleAddPeriod = () => {
+    setPeriodRules([...periodRules, { period: '', minAmount: '', maxAmount: '' }]);
+  };
+
+  const handleUpdatePeriod = (index: number, field: string, value: string) => {
+    const updated = [...periodRules];
+    updated[index] = { ...updated[index], [field]: value };
+    setPeriodRules(updated);
+  };
+
+  const handleDeletePeriod = (index: number) => {
+    setPeriodRules(periodRules.filter((_, i) => i !== index));
   };
 
   return (
@@ -214,7 +235,7 @@ const LoanTypePage: React.FC = () => {
       {/* 配置规则 Modal */}
       {isRuleModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 backdrop-blur-[2px] p-4">
-          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-lg overflow-hidden animate-in zoom-in-95 duration-200">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-2xl overflow-hidden animate-in zoom-in-95 duration-200">
             <div className="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
               <div>
                 <h3 className="text-lg font-bold text-slate-900 tracking-tight">分期类型规则配置</h3>
@@ -228,7 +249,7 @@ const LoanTypePage: React.FC = () => {
               </button>
             </div>
 
-            <div className="p-8 space-y-6">
+            <div className="p-8 space-y-6 max-h-[70vh] overflow-y-auto custom-scrollbar">
                <div className="bg-blue-50/50 rounded-2xl p-4 border border-blue-100 mb-2">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-bold text-blue-500 uppercase tracking-widest">当前应用对象</span>
@@ -237,40 +258,42 @@ const LoanTypePage: React.FC = () => {
                   </div>
                </div>
 
-              {/* 是否合并账单日 */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  是否合并账单日 <span className="text-red-500">*</span>
-                </label>
-                <div className="flex bg-slate-100 p-1 rounded-2xl">
-                  {['是', '否'].map(opt => (
-                    <button 
-                      key={opt}
-                      onClick={() => setRuleFormData({ ...ruleFormData, isMergeBilling: opt })}
-                      className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${ruleFormData.isMergeBilling === opt ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
-                    >
-                      {opt}
-                    </button>
-                  ))}
+              <div className="grid grid-cols-2 gap-6">
+                {/* 是否合并账单日 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    是否合并账单日 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="flex bg-slate-100 p-1 rounded-2xl">
+                    {['是', '否'].map(opt => (
+                      <button 
+                        key={opt}
+                        onClick={() => setRuleFormData({ ...ruleFormData, isMergeBilling: opt })}
+                        className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all ${ruleFormData.isMergeBilling === opt ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400'}`}
+                      >
+                        {opt}
+                      </button>
+                    ))}
+                  </div>
                 </div>
-              </div>
 
-              {/* 合并账单日天数 */}
-              <div className="space-y-2">
-                <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
-                  合并账单日天数 <span className="text-red-500">*</span>
-                </label>
-                <div className="relative">
-                  <input 
-                    type="number" 
-                    disabled={ruleFormData.isMergeBilling === '否'}
-                    className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-bold outline-none transition-all ${
-                      ruleFormData.isMergeBilling === '否' ? 'opacity-50 cursor-not-allowed' : 'focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
-                    }`}
-                    value={ruleFormData.mergeDays}
-                    onChange={(e) => setRuleFormData({ ...ruleFormData, mergeDays: e.target.value })}
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400">天</span>
+                {/* 合并账单日天数 */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    合并账单日天数 <span className="text-red-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input 
+                      type="number" 
+                      disabled={ruleFormData.isMergeBilling === '否'}
+                      className={`w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-[13px] font-bold outline-none transition-all ${
+                        ruleFormData.isMergeBilling === '否' ? 'opacity-50 cursor-not-allowed' : 'focus:bg-white focus:border-blue-600 focus:ring-4 focus:ring-blue-100'
+                      }`}
+                      value={ruleFormData.mergeDays}
+                      onChange={(e) => setRuleFormData({ ...ruleFormData, mergeDays: e.target.value })}
+                    />
+                    <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[11px] font-bold text-slate-400">天</span>
+                  </div>
                 </div>
               </div>
 
@@ -294,6 +317,86 @@ const LoanTypePage: React.FC = () => {
                   </select>
                   <ICONS.ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400 group-focus-within:text-blue-600" size={16} />
                 </div>
+              </div>
+
+              {/* 期数限额配置表格 */}
+              <div className="space-y-4 pt-4 border-t border-slate-100">
+                <div className="flex items-center justify-between px-1">
+                  <h4 className="text-xs font-bold text-slate-700 flex items-center gap-2">
+                    <ICONS.BarChart3 size={14} className="text-blue-600" />
+                    分期期数与限额配置
+                  </h4>
+                  <button 
+                    onClick={handleAddPeriod}
+                    className="text-[11px] font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 transition-colors"
+                  >
+                    <ICONS.Plus size={14} /> 新增期数
+                  </button>
+                </div>
+                
+                <div className="bg-slate-50 rounded-2xl border border-slate-200 overflow-hidden shadow-inner">
+                  <table className="w-full text-left text-[11px]">
+                    <thead className="bg-slate-100/80 border-b border-slate-200 text-slate-400 uppercase tracking-widest font-bold">
+                      <tr>
+                        <th className="px-4 py-3 w-[120px]">支持期数</th>
+                        <th className="px-4 py-3">最小分期金额 (元)</th>
+                        <th className="px-4 py-3">最大分期金额 (元)</th>
+                        <th className="px-4 py-3 w-[80px] text-right">操作</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-200">
+                      {periodRules.map((rule, index) => (
+                        <tr key={index} className="group bg-white/50 hover:bg-white transition-colors">
+                          <td className="px-4 py-2">
+                            <input 
+                              type="number"
+                              placeholder="期数"
+                              className="w-full bg-transparent border-none p-2 text-[12px] font-bold text-slate-700 focus:ring-0 outline-none"
+                              value={rule.period}
+                              onChange={(e) => handleUpdatePeriod(index, 'period', e.target.value)}
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input 
+                              type="number"
+                              placeholder="0.00"
+                              className="w-full bg-transparent border-none p-2 text-[12px] font-mono font-bold text-blue-600 focus:ring-0 outline-none"
+                              value={rule.minAmount}
+                              onChange={(e) => handleUpdatePeriod(index, 'minAmount', e.target.value)}
+                            />
+                          </td>
+                          <td className="px-4 py-2">
+                            <input 
+                              type="number"
+                              placeholder="0.00"
+                              className="w-full bg-transparent border-none p-2 text-[12px] font-mono font-bold text-slate-700 focus:ring-0 outline-none"
+                              value={rule.maxAmount}
+                              onChange={(e) => handleUpdatePeriod(index, 'maxAmount', e.target.value)}
+                            />
+                          </td>
+                          <td className="px-4 py-2 text-right">
+                            <button 
+                              onClick={() => handleDeletePeriod(index)}
+                              className="p-1.5 text-slate-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                            >
+                              <ICONS.Plus className="rotate-45" size={14} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))}
+                      {periodRules.length === 0 && (
+                        <tr>
+                          <td colSpan={4} className="px-4 py-8 text-center text-slate-400 font-medium">
+                            暂未配置期数规则，请点击“新增期数”
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+                <p className="text-[10px] text-slate-400 italic px-1">
+                  提示：系统将根据客户输入的贷款金额，自动筛选满足限额条件的可用期数选项。
+                </p>
               </div>
             </div>
 

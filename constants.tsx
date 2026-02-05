@@ -47,8 +47,8 @@ export const MENU_DATA: MenuItem[] = [
     children: [
       { id: 'product-basic', label: '产品基础配置' },
       { id: 'loan-type', label: '贷款类型配置' },
-      { id: 'product-common', label: '产品通用配置' },
       { id: 'channel-params', label: '渠道参数管理' },
+      { id: 'product-common', label: '通用逻辑配置' },
     ]
   },
   {

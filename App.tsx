@@ -8,6 +8,7 @@ import ProductCommonPage from './components/ProductCommonPage';
 import FunderManagementPage from './components/FunderManagementPage';
 import SystemManagementPage from './components/SystemManagementPage';
 import ProductBasicPage from './components/ProductBasicPage';
+import ChannelParamsPage from './components/ChannelParamsPage';
 
 const App: React.FC = () => {
   const [activeMenuId, setActiveMenuId] = useState('product-basic');
@@ -18,7 +19,7 @@ const App: React.FC = () => {
         case 'dashboard': return '控制台';
         case 'product-basic': return '产品基础配置';
         case 'loan-type': return '贷款类型配置';
-        case 'product-common': return '产品通用配置';
+        case 'product-common': return '通用逻辑配置';
         case 'channel-params': return '渠道参数管理';
         case 'funder-management': return '资方管理';
         case 'system-management': return '系统管理';
@@ -34,6 +35,8 @@ const App: React.FC = () => {
         return <LoanTypePage />;
       case 'product-common':
         return <ProductCommonPage />;
+      case 'channel-params':
+        return <ChannelParamsPage />;
       case 'funder-management':
         return <FunderManagementPage />;
       case 'system-management':
